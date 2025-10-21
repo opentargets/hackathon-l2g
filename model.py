@@ -118,12 +118,12 @@ for fold in training_arrays:
     data_id = fold[1]
 
 # %%
-feature_matrix = [ fold[0][i][0] for i in range(len(fold[0]))]
-targets = [ fold[0][i][1] for i in range(len(fold[0]))]
+feature_matrix = [ torch.tensor(fold[0][i][0]) for i in range(len(fold[0]))]
+targets = [ torch.tensor(fold[0][i][1]) for i in range(len(fold[0]))]
 labels = [ fold[1][i] for i in range(len(fold[0]))]
 
 dataset = L2GDataset(feature_matrix, targets)
-model = TransformerScalarClassifier(d_model=dataset.n_features, n_heads=4, n_layers=2)
+model = TransformerScalarClassifier(d_model=dataset.n_features, n_heads=3, n_layers=3)
 optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
 

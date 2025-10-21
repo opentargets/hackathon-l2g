@@ -91,6 +91,7 @@ def collate_fn(batch, block_size):
 
 # %%
 seq_len = 5      # number of classes
+d_model = 20
 N_SAMPLES = 1000
 data = []
 for i in range(N_SAMPLES):
@@ -99,24 +100,21 @@ for i in range(N_SAMPLES):
 targets = [ random.choice(range(5)) for i in range(1000) ]
 dataset = L2GDataset(data, targets)
 model = TransformerScalarClassifier(d_model=dataset.n_features, n_heads=4, n_layers=2)
-optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
 
 # %%
+
+from utils import Trainer
 block_size = 128
-dataloader = DataLoader(
+train_loader = DataLoader(
     dataset, batch_size=8,
     collate_fn=lambda b: collate_fn(b, block_size)
 )
 
-max_epochs = 1000
+# %%
+trainer = Trainer(model, optimizer, train_loader, val_loader=None, device='cpu')
+# %%
 
-from tqdm import tqdm
-for epoch in tqdm(range(max_epochs)):
-    for features, label, mask in dataloader:
-        optimizer.zero_grad()
-        logits, _ = model(features, padding_mask=mask)
-        loss_ce = torch.nn.functional.cross_entropy(logits, label)
-        loss_ce.backward()
-        optimizer.step()
+trainer.train(100)
 # %%

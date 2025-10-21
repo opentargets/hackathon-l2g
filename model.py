@@ -112,39 +112,40 @@ feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.colu
 
 training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=5)
 
-for fold in training_arrays:
-    data_fold = fold[0][0]
-    data_target = fold[0][1]
-    data_id = fold[1]
+for i, fold in enumerate(training_arrays):
+    
+    training_fold = training_arrays[i]   
+    feature_matrix = [ torch.tensor(training_fold[0][i][0]) for i in range(len(training_fold[0]))]
+    targets = [ torch.tensor(training_fold[0][i][1]) for i in range(len(training_fold[0]))]
+    labels = [ training_fold[1][i] for i in range(len(training_fold[0]))]    
+    training_dataset = L2GDataset(feature_matrix, targets)
 
-# %%
-feature_matrix = [ torch.tensor(fold[0][i][0]) for i in range(len(fold[0]))]
-targets = [ torch.tensor(fold[0][i][1]) for i in range(len(fold[0]))]
-labels = [ fold[1][i] for i in range(len(fold[0]))]
+    block_size = 128
+    train_loader = DataLoader(
+        training_dataset, batch_size=8,
+        collate_fn=lambda b: collate_fn(b, block_size)
+    )
 
-dataset = L2GDataset(feature_matrix, targets)
-model = TransformerScalarClassifier(d_model=dataset.n_features, n_heads=3, n_layers=3)
-optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
+    testing_fold = testing_arrays[i]
+    feature_matrix = [ torch.tensor(testing_fold[0][i][0]) for i in range(len(testing_fold[0]))]
+    targets = [ torch.tensor(testing_fold[0][i][1]) for i in range(len(testing_fold[0]))]
+    labels = [ testing_fold[1][i] for i in range(len(testing_fold[0]))]
+    
+    testing_dataset = L2GDataset(feature_matrix, targets)
 
+    block_size = 128
+    testing_loader = DataLoader(
+        testing_dataset, batch_size=8,
+        collate_fn=lambda b: collate_fn(b, block_size)
+    )
+    
+    
+    model = TransformerScalarClassifier(d_model=training_dataset.n_features, n_heads=3, n_layers=3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
+           
+    from utils import Trainer
+        
+    trainer = Trainer(model, optimizer, train_loader, val_loader=testing_loader, device='cpu')
+    trainer.train(2)
 
-# %%
-
-from utils import Trainer
-block_size = 128
-train_loader = DataLoader(
-    dataset, batch_size=8,
-    collate_fn=lambda b: collate_fn(b, block_size)
-)
-
-# %%
-trainer = Trainer(model, optimizer, train_loader, val_loader=None, device='cpu')
-# %%
-
-trainer.train(100)
-
-# %%
-
-dataset = L2GDataset(feature_matrix, targets)
-# %%
-dataset[0]
-# %%
+    torch.save(model.state_dict(), f"model_fold{i}.pt")

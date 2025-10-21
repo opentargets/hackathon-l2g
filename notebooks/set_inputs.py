@@ -23,15 +23,6 @@ from sklearn.base import clone
 from sklearn.model_selection import train_test_split
 import logging
 
-# %%
-feature_matrix_train = pd.read_parquet("/home/charlotte/DRYLAB/P/OP_L2G/data/train.parquet")
-#feature_matrix_test = pd.read_parquet("/home/charlotte/DRYLAB/P/OP_L2G/data/test.parquet")
-#feature_matrix = pd.concat([feature_matrix_train, feature_matrix_test])
-feature_matrix_train.columns
-
-# %%
-feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.columns.str.contains('Neighbourhood', case=False)] 
-
 
 # %%
 def hierarchical_split(
@@ -232,13 +223,5 @@ def get_hierarchical_splits(feature_matrix_train_non: pd.DataFrame,
 
 
 # %%
-training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non)
 
-
-# %%
-
-for fold in training_arrays:
-    data_fold = fold[0][0]
-    data_target = fold[0][1]
-    data_id = fold[1]
 

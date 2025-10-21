@@ -98,7 +98,31 @@ for i in range(N_SAMPLES):
     data.append(torch.randn(seq_len, d_model))
 
 targets = [ random.choice(range(5)) for i in range(1000) ]
-dataset = L2GDataset(data, targets)
+# %%
+
+import pandas as pd
+from notebooks.set_inputs import get_hierarchical_splits
+
+feature_matrix_train = pd.read_parquet("data/train.parquet")
+#feature_matrix_test = pd.read_parquet("data/test.parquet")
+#feature_matrix = pd.concat([feature_matrix_train, feature_matrix_test])
+feature_matrix_train.columns
+
+feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.columns.str.contains('Neighbourhood', case=False)] 
+
+training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=5)
+
+for fold in training_arrays:
+    data_fold = fold[0][0]
+    data_target = fold[0][1]
+    data_id = fold[1]
+
+# %%
+feature_matrix = [ fold[0][i][0] for i in range(len(fold[0]))]
+targets = [ fold[0][i][1] for i in range(len(fold[0]))]
+labels = [ fold[1][i] for i in range(len(fold[0]))]
+
+dataset = L2GDataset(feature_matrix, targets)
 model = TransformerScalarClassifier(d_model=dataset.n_features, n_heads=4, n_layers=2)
 optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
 
@@ -117,4 +141,10 @@ trainer = Trainer(model, optimizer, train_loader, val_loader=None, device='cpu')
 # %%
 
 trainer.train(100)
+
+# %%
+
+dataset = L2GDataset(feature_matrix, targets)
+# %%
+dataset[0]
 # %%

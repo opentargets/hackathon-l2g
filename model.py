@@ -46,7 +46,7 @@ class L2GDataset(Dataset):
         self.targets = targets
 
     def __getitem__(self, index):
-        return self.data[index], targets[index]
+        return self.data[index], self.targets[index]
 
     def __len__(self):
         return len(self.data)
@@ -112,6 +112,27 @@ feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.colu
 
 training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=5)
 
+# %%
+from tqdm import tqdm
+# %%
+for i, fold in enumerate(testing_arrays):
+    
+    training_fold = training_arrays[i]   
+    feature_matrix = [ torch.tensor(training_fold[0][i][0]) for i in range(len(training_fold[0]))]
+    targets = [ torch.tensor(training_fold[0][i][1]) for i in range(len(training_fold[0]))]
+    labels = [ training_fold[1][i] for i in range(len(training_fold[0]))]    
+    training_dataset = L2GDataset(feature_matrix, targets)
+
+    block_size = 128
+    train_loader = DataLoader(
+        training_dataset, batch_size=8,
+        collate_fn=lambda b: collate_fn(b, block_size)
+    )
+
+    for x, y, mask in tqdm(train_loader):
+        pass
+
+# %%
 for i, fold in enumerate(training_arrays):
     
     training_fold = training_arrays[i]   
@@ -138,8 +159,7 @@ for i, fold in enumerate(training_arrays):
         testing_dataset, batch_size=8,
         collate_fn=lambda b: collate_fn(b, block_size)
     )
-    
-    
+        
     model = TransformerScalarClassifier(d_model=training_dataset.n_features, n_heads=3, n_layers=3)
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-3)
            

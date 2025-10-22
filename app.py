@@ -49,6 +49,7 @@ if ckpt_file is not None:
     # Try to get config from checkpoint
     if "config" in checkpoint:
         config = checkpoint["config"]
+        config.pop("fold")
         st.success("Loaded model configuration from checkpoint.")
     else:
         # try to infer something minimal

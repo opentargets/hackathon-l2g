@@ -56,6 +56,7 @@ parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--learning_rate", type=float, default=3e-4)
 parser.add_argument("--n_layers", type=int, default=3)
 parser.add_argument("--block_size", type=int, default=128)
+parser.add_argument("--device", type=str, default="cuda")
 args = parser.parse_args()
 
 block_size = args.block_size
@@ -80,7 +81,7 @@ feature_matrix_train = pd.read_parquet("data/train.parquet")
 #feature_matrix = pd.concat([feature_matrix_train, feature_matrix_test])
 
 feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.columns.str.contains('Neighbourhood', case=False)]
-feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.columns.str.contains('GeneCount', case=False)]
+feature_matrix_train_non = feature_matrix_train_non.loc[:,~feature_matrix_train_non.columns.str.contains('GeneCount', case=False)]
 
 # %%
 n_folds = 5
@@ -116,7 +117,7 @@ for i in range(n_folds):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)              
             
     early_stopping = EarlyStopping(patience=patience)
-    trainer = Trainer(model, optimizer, train_loader, val_loader=testing_loader, device='cpu', early_stopping=early_stopping)
+    trainer = Trainer(model, optimizer, train_loader, val_loader=testing_loader, device=args.device, early_stopping=early_stopping)
     trainer.train(max_epochs)
 
     torch.save(model.state_dict(), f"model_fold{i+1}.pt")

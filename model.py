@@ -135,7 +135,6 @@ for i in folds:
     trainer.train(max_epochs)
 
     torch.save({
-        "epoch": epoch,
         "model_state": model.state_dict(),
         "optimizer_state": optimizer.state_dict(),
         "config": {

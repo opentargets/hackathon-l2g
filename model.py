@@ -81,7 +81,7 @@ feature_matrix_train = pd.read_parquet("data/train.parquet")
 #feature_matrix = pd.concat([feature_matrix_train, feature_matrix_test])
 
 feature_matrix_train_non = feature_matrix_train.loc[:,~feature_matrix_train.columns.str.contains('Neighbourhood', case=False)]
-feature_matrix_train_non = feature_matrix_train_non.loc[:,~feature_matrix_train.columns.str.contains('GeneCount', case=False)]
+feature_matrix_train_non = feature_matrix_train_non.loc[:,~feature_matrix_train_non.columns.str.contains('GeneCount', case=False)]
 
 # %%
 n_folds = 5

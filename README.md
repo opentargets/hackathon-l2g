@@ -71,11 +71,36 @@ Place the downloaded files in the data/ directory.
 
 ## Usage
 
+To get help page: 
+
+    uv run python model.py --test
+
+options:
+| Argument          | Type    | Default  | Description                                                                                                                           |
+| ----------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `--max_epochs`    | `int`   | `1000`   | Maximum number of training epochs. One epoch corresponds to a full pass through the entire training dataset.                          |
+| `--patience`      | `int`   | `10`     | Number of epochs to wait for improvement in validation loss before early stopping. Helps prevent overfitting and saves training time. |
+| `--batch_size`    | `int`   | `32`     | Number of samples per training batch. Larger batches can lead to faster training but may require more GPU memory.                     |
+| `--learning_rate` | `float` | `3e-4`   | Learning rate for the optimizer. Controls the step size at each iteration while moving toward a minimum of the loss function.         |
+| `--n_heads`       | `int`   | `2`      | Number of attention heads in each Transformer layer. More heads allow the model to focus on different representation subspaces.       |
+| `--embedding_dim` | `int`   | `20`     | Size of the token embedding vectors. This controls the dimensionality of input representations to the model.                          |
+| `--n_layers`      | `int`   | `3`      | Number of Transformer layers (encoder/decoder blocks). Increasing layers can improve model capacity but may increase training time.   |
+| `--block_size`    | `int`   | `128`    | Maximum sequence length (context window) the model can process at once. Sequences longer than this will be truncated or split.        |
+| `--device`        | `str`   | `"cuda"` | Device to run training on: `"cuda"` for GPU acceleration or `"cpu"` for CPU-only training.                                            |
+| `--folds`      | `int`   | `None`      | Number of folds to use for 5-CV. Data is splitted in 5 sets, 
+but this option allows you to choose how many folds you'd like to use for training.
+
+
 To train the model: 
 
-    python model.py --mode train
+    uv run python model.py
 
-    python model.py --mode predict
+
+## Deployment 
+
+Once you have the model, you can deploy and compare it to other models using streamlit:
+
+    uv run streamlit run app.py
 
 
 ## Licence 

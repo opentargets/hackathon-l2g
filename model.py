@@ -109,7 +109,7 @@ for i in folds:
     labels = [ training_fold[1][i] for i in range(len(training_fold[0]))]    
     training_dataset = L2GDataset(feature_matrix, targets)
 
-
+    input_dim=training_dataset.n_features
     train_loader = DataLoader(
         training_dataset, batch_size=8,
         collate_fn=lambda b: collate_fn(b, block_size)
@@ -127,7 +127,7 @@ for i in folds:
         collate_fn=lambda b: collate_fn(b, block_size)
     )
         
-    model = TransformerScalarClassifier(input_dim=training_dataset.n_features, d_model=embedding_dim, n_heads=n_heads, n_layers=n_layers)
+    model = TransformerScalarClassifier(input_dim=input_dim, d_model=embedding_dim, n_heads=n_heads, n_layers=n_layers)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)              
             
     early_stopping = EarlyStopping(patience=patience)
@@ -145,5 +145,4 @@ for i in folds:
             "fold": i+1
         }
     }, f"model_fold{i+1}.pt")
-
 

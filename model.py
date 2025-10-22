@@ -15,8 +15,9 @@ from utils import EarlyStopping
 
 class TransformerScalarClassifier(nn.Module):
 
-    def __init__(self, d_model, n_heads, n_layers):
+    def __init__(self, input_dim, d_model, n_heads, n_layers):
         super().__init__()
+        self.linear = nn.Linear(input_dim, d_model)
         encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=n_heads)
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
 
@@ -29,6 +30,8 @@ class TransformerScalarClassifier(nn.Module):
         Each token represents a possible class.
         """
         # (seq_len, batch, d_model)
+        
+        x = self.linear(x) # = nn.Linear(input_dim, d_model)
         x = x.transpose(0, 1)
 
         # transformer encoding
@@ -54,6 +57,8 @@ parser.add_argument("--max_epochs", type=int, default=1000)
 parser.add_argument("--patience", type=int, default=10)
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--learning_rate", type=float, default=3e-4)
+parser.add_argument("--n_heads", type=int, default=2)
+parser.add_argument("--embedding_dim", type=int, default=20)
 parser.add_argument("--n_layers", type=int, default=3)
 parser.add_argument("--block_size", type=int, default=128)
 parser.add_argument("--device", type=str, default="cuda")
@@ -66,6 +71,8 @@ lr = args.learning_rate
 n_layers = args.n_layers
 batch_size = args.batch_size
 max_epochs = args.max_epochs
+embedding_dim = args.embedding_dim
+n_heads = args.n_heads
 
 # %%
 # seq_len = 5      # number of classes
@@ -86,7 +93,7 @@ feature_matrix_train_non = feature_matrix_train_non.loc[:,~feature_matrix_train_
 
 # %%
 n_folds = 5
-training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=n_folds)
+training_arrays, val_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=n_folds)
 
 if args.folds is None:
     folds = list(range(n_folds))
@@ -108,23 +115,23 @@ for i in folds:
         collate_fn=lambda b: collate_fn(b, block_size)
     )
 
-    testing_fold = testing_arrays[i]
-    feature_matrix = [ torch.tensor(testing_fold[0][i][0]) for i in range(len(testing_fold[0]))]
-    targets = [ torch.tensor(testing_fold[0][i][1]) for i in range(len(testing_fold[0]))]
-    labels = [ testing_fold[1][i] for i in range(len(testing_fold[0]))]
+    val_fold = val_arrays[i]
+    feature_matrix = [ torch.tensor(val_fold[0][i][0]) for i in range(len(val_fold[0]))]
+    targets = [ torch.tensor(val_fold[0][i][1]) for i in range(len(val_fold[0]))]
+    labels = [ val_fold[1][i] for i in range(len(val_fold[0]))]
     
-    testing_dataset = L2GDataset(feature_matrix, targets)
+    val_dataset = L2GDataset(feature_matrix, targets)
 
-    testing_loader = DataLoader(
-        testing_dataset, batch_size=batch_size,
+    val_loader = DataLoader(
+        val_dataset, batch_size=batch_size,
         collate_fn=lambda b: collate_fn(b, block_size)
     )
         
-    model = TransformerScalarClassifier(d_model=training_dataset.n_features, n_heads=1, n_layers=n_layers)
+    model = TransformerScalarClassifier(input_dim=training_dataset.n_features, d_model=embedding_dim, n_heads=n_heads, n_layers=n_layers)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)              
             
     early_stopping = EarlyStopping(patience=patience)
-    trainer = Trainer(model, optimizer, train_loader, val_loader=testing_loader, device=args.device, early_stopping=early_stopping)
+    trainer = Trainer(model, optimizer, train_loader, val_loader=val_loader, device=args.device, early_stopping=early_stopping)
     trainer.train(max_epochs)
 
     torch.save(model.state_dict(), f"model_fold{i+1}.pt")

@@ -62,7 +62,7 @@ parser.add_argument("--embedding_dim", type=int, default=20)
 parser.add_argument("--n_layers", type=int, default=3)
 parser.add_argument("--block_size", type=int, default=128)
 parser.add_argument("--device", type=str, default="cuda")
-parser.add_argument("--folds", nargs="+", default=None)
+parser.add_argument("--folds", nargs="+", type=int, default=None)
 args = parser.parse_args()
 
 block_size = args.block_size
@@ -146,3 +146,5 @@ for i in folds:
             "fold": i+1
         }
     }, f"model_fold{i+1}.pt")
+
+

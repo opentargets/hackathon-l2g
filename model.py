@@ -134,6 +134,15 @@ for i in folds:
     trainer = Trainer(model, optimizer, train_loader, val_loader=val_loader, device=args.device, early_stopping=early_stopping)
     trainer.train(max_epochs)
 
-    torch.save(model.state_dict(), f"model_fold{i+1}.pt")
-
-
+    torch.save({
+        "epoch": epoch,
+        "model_state": model.state_dict(),
+        "optimizer_state": optimizer.state_dict(),
+        "config": {
+            "input_dim": input_dim,
+            "d_model": embedding_dim,
+            "n_heads": n_heads,
+            "n_layers": n_layers,
+            "fold": i+1
+        }
+    }, f"model_fold{i+1}.pt")

@@ -57,6 +57,7 @@ parser.add_argument("--learning_rate", type=float, default=3e-4)
 parser.add_argument("--n_layers", type=int, default=3)
 parser.add_argument("--block_size", type=int, default=128)
 parser.add_argument("--device", type=str, default="cuda")
+parser.add_argument("--folds", nargs="+", default=None)
 args = parser.parse_args()
 
 block_size = args.block_size
@@ -87,7 +88,13 @@ feature_matrix_train_non = feature_matrix_train_non.loc[:,~feature_matrix_train_
 n_folds = 5
 training_arrays, testing_arrays = get_hierarchical_splits(feature_matrix_train_non, n_splits=n_folds)
 
-for i in range(n_folds):
+if args.folds is None:
+    folds = list(range(n_folds))
+else:
+   folds = args.folds
+
+
+for i in folds:
     
     training_fold = training_arrays[i]   
     feature_matrix = [ torch.tensor(training_fold[0][i][0]) for i in range(len(training_fold[0]))]
@@ -121,3 +128,5 @@ for i in range(n_folds):
     trainer.train(max_epochs)
 
     torch.save(model.state_dict(), f"model_fold{i+1}.pt")
+
+

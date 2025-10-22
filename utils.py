@@ -2,6 +2,8 @@ import torch
 import torch.nn.functional as F
 import mlflow
 from tqdm import tqdm
+from torch.utils.data import Dataset, DataLoader
+import copy
 
 class EarlyStopping:
     def __init__(self, patience=5, min_delta=0.0, mode="min"):
@@ -131,3 +133,53 @@ class Trainer:
         val_loss = total_loss / total_count
         val_acc = total_correct / total_count
         return val_loss, val_acc, fdr
+    
+
+class L2GDataset(Dataset):
+
+    def __init__(self, list_of_arrays, targets):
+        self.data = list_of_arrays
+        self.targets = targets
+
+    def __getitem__(self, index):
+        return self.data[index], self.targets[index]
+
+    def __len__(self):
+        return len(self.data)
+
+    @property
+    def n_features(self):
+        return self.data[0].shape[1]
+ 
+
+def collate_fn(batch, block_size):
+    """
+    batch: list of tuples (x, y)
+        x: (seq_len_i, d_model)
+        y: int (single label for the whole sample)
+    """
+    import torch
+
+    max_len = block_size
+    d_model = batch[0][0].shape[1]
+
+    padded_x = []
+    padding_mask = []
+    labels = []
+
+    for x, y in batch:
+        pad_len = max_len - len(x)
+        x_padded = torch.cat([x, torch.zeros(pad_len, d_model)], dim=0)
+        mask = torch.cat([
+            torch.zeros(len(x), dtype=torch.bool),
+            torch.ones(pad_len, dtype=torch.bool)
+        ])
+        padded_x.append(x_padded)
+        padding_mask.append(mask)
+        labels.append(torch.tensor(y, dtype=torch.long))
+
+    padded_x = torch.stack(padded_x)         # (batch, max_len, d_model)
+    padding_mask = torch.stack(padding_mask) # (batch, max_len)
+    labels = torch.stack(labels)             # (batch,)
+
+    return padded_x, labels, padding_mask

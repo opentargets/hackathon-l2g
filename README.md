@@ -14,12 +14,12 @@ Requirements
     uv (for environment management)
 
 ### Clone the repository
-git clone https://github.com/your-username/open-targets-l2g-transformer.git
-cd open-targets-l2g-transformer
+    git clone https://github.com/your-username/open-targets-l2g-transformer.git
+    cd open-targets-l2g-transformer
 
 ### Install uv
 
-pip install uv
+    pip install uv
 
 
 ### Dowanload input matrix

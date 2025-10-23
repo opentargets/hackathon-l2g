@@ -6,9 +6,9 @@ The goal is to build and evaluate a transformer-based machine learning model to 
 L2G aims to prioritize causal genes from GWAS loci.
 This project explores how modern transformer architectures can improve gene prioritization compared to original model.
 
-## workflow detail
+## Workflow detail
 
-## Preparing input
+### Preparing input
 
 The model uses the training data and filters out redundant features, exploiting the transformer's capacity to learn 
 contextual information about neighboring genes within the same credible set.
@@ -38,7 +38,7 @@ For training the model, it performs a 5-fold cross validation on the training se
 Each training and testing split is done hierarchically, intending to avoid as much as possible overlapping 
 positive genes between the training and testing set. 
 
-## Trasnformer model 
+### Trasnformer model 
 
 The embedded gene features are passed through three stacked Transformer encoder layers. 
 After passing through three Transformer layers, the output is passed through a Softmax layer that gives a probability distribution 
@@ -87,7 +87,7 @@ options:
 | `--n_layers`      | `int`   | `3`      | Number of Transformer layers (encoder/decoder blocks). Increasing layers can improve model capacity but may increase training time.   |
 | `--block_size`    | `int`   | `128`    | Maximum sequence length (context window) the model can process at once. Sequences longer than this will be truncated or split.        |
 | `--device`        | `str`   | `"cuda"` | Device to run training on: `"cuda"` for GPU acceleration or `"cpu"` for CPU-only training.                                            |
-| `--folds`      | `int`   | `None`      | Number of folds to use for 5-CV. Data is splitted in 5 sets, but this option allows you to choose how many folds you'd like to use for training.
+| `--folds`      | `int`   | `5`      | Number of folds to use for 5-CV. Data is splitted in 5 sets, but this option allows you to choose how many folds you'd like to use for training, default is 5.
 
 
 To train the model: 
@@ -104,4 +104,4 @@ Once you have the model, you can deploy and compare it to other models using str
 
 ## Licence 
 
-GPL ?
+GPL 

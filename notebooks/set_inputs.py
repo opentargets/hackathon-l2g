@@ -161,7 +161,8 @@ def split_by_group(df,
         drop_group_col: whether to drop the grouping column from arrays
     
     Returns:
-        List of numpy arrays, one per group
+        List of numpy arrays, 2 per group, one with features, the other one with index row of best performing 
+        gene within that group.
     """
     arrays = []
     id_table = []
@@ -185,7 +186,7 @@ def get_hierarchical_splits(feature_matrix_train_non: pd.DataFrame,
     target_name: str = "goldStandardSet",
 ) -> list[tuple[pd.DataFrame, pd.DataFrame]]:
     """
-    Split data hierarchically and return list of array for pytorch training
+    Split data hierarchically and return list of length n_splits with input arrays for pytorch training.
     
     Args:
         df: pandas DataFrame
@@ -195,8 +196,8 @@ def get_hierarchical_splits(feature_matrix_train_non: pd.DataFrame,
         target_name: name of the target variable column
     
     Returns:
-        List of numpy arrays, 2 per group, one with features, the other one with index row of best performing 
-        gene within that group.
+        For each fold, list of of 2, training and testing set. Each set is  a list of arrays for each gorup, one with features, 
+        the other one with index row of best performing gene within that group.
     """
     split_data_train = []
     split_data_test = []

@@ -73,7 +73,7 @@ Place the downloaded files in the data/ directory.
 
 To get help page: 
 
-    uv run python model.py --test
+    uv run python model.py --help
 
 options:
 | Argument          | Type    | Default  | Description                                                                                                                           |
